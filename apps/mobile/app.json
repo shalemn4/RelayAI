@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "RelayAI",
+    "slug": "relayai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "relayai",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0F172A"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
