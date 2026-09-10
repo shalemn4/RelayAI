@@ -1,0 +1,113 @@
+# ==========================================
+# RelayAI - Monorepo .gitignore
+# ==========================================
+
+# 1. Dependencies
+node_modules/
+*/node_modules/
+.pnp/
+.pnp.js
+
+# 2. Python & Virtual Environments
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 3. SQLite & Local Database Files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+relayai.db*
+
+# 4. Environment Variables & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+*.pem
+*.key
+*.cert
+*.crt
+# Keep example templates
+!.env.example
+
+# 5. Expo, Metro & Mobile Native
+.expo/
+*/.expo/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+
+# Generated Native Builds
+apps/mobile/ios/
+apps/mobile/android/
+
+# 6. Build Outputs & Caches
+dist/
+*/dist/
+build/
+*/build/
+out/
+.turbo/
+*.tsbuildinfo
+
+# 7. Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 8. Testing & Code Coverage
+.pytest_cache/
+*/.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+*/coverage/
+.nyc_output/
+
+# 9. Operating System & Editor Files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# IDE & Editor configs
+.idea/
+*.sublime-workspace
+*.sublime-project
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# 10. AI Agent Local Scratch
+.claude/
+*/.claude/

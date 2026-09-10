@@ -1,0 +1,7 @@
+{
+  "name": "@relay-ai/types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript definitions for RelayAI",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}

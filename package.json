@@ -1,0 +1,25 @@
+{
+  "name": "relay-ai",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "mobile:dev": "npm --workspace=apps/mobile run start",
+    "mobile:web": "npm --workspace=apps/mobile run web",
+    "backend:dev": "uvicorn backend.app.main:app --reload --port 8000",
+    "test:backend": "python -m pytest tests/test_backend.py -v",
+    "test:mobile": "npm --workspace=apps/mobile test"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.5.1",
+    "ts-jest": "^29.4.12",
+    "typescript": "~5.3.3"
+  }
+}
