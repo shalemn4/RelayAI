@@ -7,6 +7,7 @@
     "apps/*"
   ],
   "scripts": {
+    "build": "npx --workspace=apps/mobile expo export --platform web",
     "mobile:dev": "npm --workspace=apps/mobile run start",
     "mobile:web": "npm --workspace=apps/mobile run web",
     "backend:dev": "uvicorn backend.app.main:app --reload --port 8000",
