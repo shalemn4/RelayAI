@@ -80,17 +80,20 @@ export default function InboxScreen() {
 
   // Flatten all pages
   const allConversations: Conversation[] = useMemo(() => {
-    if (!data?.pages) return [];
-    let items = data.pages.flatMap((page) => page.items);
+    if (!data?.pages || !Array.isArray(data.pages)) return [];
+    let items = data.pages
+      .flatMap((page) => (page && Array.isArray(page.items) ? page.items : []))
+      .filter((item): item is Conversation => Boolean(item && item.id));
     if (quickFilter === 'unread') {
-      items = items.filter((c) => c.unread_count > 0);
+      items = items.filter((c) => c && c.unread_count > 0);
     }
     return items;
   }, [data, quickFilter]);
 
-  const totalCount = data?.pages[0]?.total ?? 0;
+  const totalCount = data?.pages?.[0]?.total ?? allConversations.length;
 
   const handleConversationPress = (conversation: Conversation) => {
+    if (!conversation?.id) return;
     analytics.track('conversation_opened', {
       conversation_id: conversation.id,
       channel: conversation.channel,
@@ -100,12 +103,15 @@ export default function InboxScreen() {
     router.push(`/(tabs)/inbox/${conversation.id}`);
   };
 
-  const renderItem = ({ item }: { item: Conversation }) => (
-    <ConversationCard
-      conversation={item}
-      onPress={() => handleConversationPress(item)}
-    />
-  );
+  const renderItem = ({ item }: { item: Conversation }) => {
+    if (!item) return null;
+    return (
+      <ConversationCard
+        conversation={item}
+        onPress={() => handleConversationPress(item)}
+      />
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -244,7 +250,7 @@ export default function InboxScreen() {
       ) : (
         <FlatList
           data={allConversations}
-          keyExtractor={(item) => String(item.id)}
+          keyExtractor={(item, index) => String(item?.id ?? index)}
           renderItem={renderItem}
           refreshControl={
             <RefreshControl

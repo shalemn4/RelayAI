@@ -50,7 +50,13 @@ export const setAuthToken = (token: string | null) => {
 };
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // If a static server (like Vercel SPA rewrites) served index.html instead of a real API endpoint
+    if (typeof response.data === 'string' && (response.data.includes('<!DOCTYPE html>') || response.data.includes('<html'))) {
+      return Promise.reject(new Error('Backend API not reachable: server returned HTML instead of JSON API response. Use Demo Mode or set EXPO_PUBLIC_API_URL.'));
+    }
+    return response;
+  },
   (error: AxiosError) => {
     // Standardize error messaging
     const detail = (error.response?.data as any)?.detail;

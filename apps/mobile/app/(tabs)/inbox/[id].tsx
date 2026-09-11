@@ -407,13 +407,16 @@ export default function ConversationScreen() {
       <FlatList
         ref={flatListRef}
         data={conversation.messages || []}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <MessageBubble
-            message={item}
-            onRetry={(tempId) => retryMessage(tempId, queryClient)}
-          />
-        )}
+        keyExtractor={(item, index) => String(item?.id ?? index)}
+        renderItem={({ item }) => {
+          if (!item?.id) return null;
+          return (
+            <MessageBubble
+              message={item}
+              onRetry={(tempId) => retryMessage(tempId, queryClient)}
+            />
+          );
+        }}
         contentContainerStyle={styles.messagesList}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
       />

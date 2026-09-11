@@ -35,9 +35,9 @@ class RealtimeManager {
       if (host === 'localhost' || host === '127.0.0.1') {
         return `ws://${host}:8000/ws`;
       }
-      // On HTTPS domain, use secure wss: to prevent Mixed Content errors
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      return `${protocol}//${window.location.host}/ws`;
+      // On a remote web host (e.g. Vercel), only connect if EXPO_PUBLIC_WS_URL is explicitly set
+      // Otherwise Vercel static server will return 200 HTML on /ws and log handshake errors
+      return null;
     }
 
     return 'ws://localhost:8000/ws';

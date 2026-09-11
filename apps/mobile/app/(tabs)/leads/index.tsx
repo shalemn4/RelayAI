@@ -41,9 +41,11 @@ export default function LeadsScreen() {
           sort_by: sortBy,
         },
       });
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
+
+  const safeLeads = Array.isArray(leads) ? leads : [];
 
   // 2. Stage Counts and Pipeline Volumes
   const stageStats = React.useMemo(() => {
@@ -51,18 +53,18 @@ export default function LeadsScreen() {
     for (const stg of STAGES) {
       stats[stg] = { count: 0, totalValue: 0 };
     }
-    for (const lead of leads) {
-      if (stats[lead.stage]) {
+    for (const lead of safeLeads) {
+      if (lead && stats[lead.stage]) {
         stats[lead.stage].count += 1;
-        stats[lead.stage].totalValue += lead.deal_value;
+        stats[lead.stage].totalValue += (lead.deal_value || 0);
       }
     }
     return stats;
-  }, [leads]);
+  }, [safeLeads]);
 
   const totalPipelineValue = React.useMemo(() => {
-    return leads.reduce((sum, l) => sum + (l.deal_value || 0), 0);
-  }, [leads]);
+    return safeLeads.reduce((sum, l) => sum + (l?.deal_value || 0), 0);
+  }, [safeLeads]);
 
   // 3. Bulk Stage Update Mutation
   const bulkUpdateMutation = useMutation({
@@ -238,9 +240,10 @@ export default function LeadsScreen() {
 
         {/* 3. Lead Cards List */}
         <FlatList
-          data={leads}
-          keyExtractor={(item) => String(item.id)}
+          data={safeLeads}
+          keyExtractor={(item, index) => String(item?.id ?? index)}
           renderItem={({ item }) => {
+            if (!item?.id) return null;
             const isSelected = selectedLeadIds.includes(item.id);
             return (
               <TouchableOpacity

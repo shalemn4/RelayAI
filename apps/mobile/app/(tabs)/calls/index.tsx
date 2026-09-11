@@ -29,9 +29,11 @@ export default function CallsScreen() {
     queryKey: ['calls'],
     queryFn: async () => {
       const res = await api.get('/calls');
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
+
+  const safeCalls = Array.isArray(calls) ? calls : [];
 
   // 2. Fetch Selected Call Detail & Transcript
   const { data: activeCall, refetch: refetchActiveCall } = useQuery<Call>({
@@ -109,9 +111,10 @@ export default function CallsScreen() {
 
       {/* Calls list */}
       <FlatList
-        data={calls}
-        keyExtractor={(item) => String(item.id)}
+        data={safeCalls}
+        keyExtractor={(item, index) => String(item?.id ?? index)}
         renderItem={({ item }) => {
+          if (!item?.id) return null;
           const isLive = item.status !== 'completed';
           return (
             <TouchableOpacity

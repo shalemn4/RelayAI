@@ -12,9 +12,11 @@ export default function AgentsScreen() {
     queryKey: ['agents'],
     queryFn: async () => {
       const res = await api.get('/agents');
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
+
+  const safeAgents = Array.isArray(agents) ? agents : [];
 
   return (
     <View style={styles.container}>
@@ -26,9 +28,11 @@ export default function AgentsScreen() {
       </View>
 
       <FlatList
-        data={agents}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
+        data={safeAgents}
+        keyExtractor={(item, index) => String(item?.id ?? index)}
+        renderItem={({ item }) => {
+          if (!item?.id) return null;
+          return (
           <Card variant="elevated" padding="md" style={styles.agentCard}>
             <View style={styles.cardHeader}>
               <View>
@@ -62,7 +66,8 @@ export default function AgentsScreen() {
               <Text style={styles.modelText}>Model: {item.model}</Text>
             </View>
           </Card>
-        )}
+        );
+      }}
         contentContainerStyle={styles.listContent}
       />
     </View>
