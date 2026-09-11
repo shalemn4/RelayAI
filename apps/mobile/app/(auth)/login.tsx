@@ -18,7 +18,7 @@ import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const { login, loginAsDemo } = useAuthStore();
   const { showToast } = useToast();
 
   const [email, setEmail] = useState('operator@relayai.com');
@@ -43,6 +43,13 @@ export default function LoginScreen() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDemoLogin = (role: 'operator' | 'supervisor' = 'operator') => {
+    setError('');
+    loginAsDemo(role);
+    showToast(`Logged in as ${role === 'operator' ? 'Operator' : 'Supervisor'} (Demo Mode)`, 'info');
+    router.replace('/(tabs)/inbox');
   };
 
   const fillDemoCredentials = (role: 'operator' | 'supervisor') => {
@@ -80,6 +87,12 @@ export default function LoginScreen() {
           {error ? (
             <View style={styles.errorBanner}>
               <Text style={styles.errorText}>⚠️ {error}</Text>
+              <TouchableOpacity
+                onPress={() => handleDemoLogin('operator')}
+                style={styles.demoBannerBtn}
+              >
+                <Text style={styles.demoBannerBtnText}>🚀 Continue in Demo Mode (No Backend Required)</Text>
+              </TouchableOpacity>
             </View>
           ) : null}
 
@@ -136,6 +149,13 @@ export default function LoginScreen() {
               style={styles.demoBtn}
             />
           </View>
+
+          <TouchableOpacity
+            onPress={() => handleDemoLogin('operator')}
+            style={styles.demoDirectLink}
+          >
+            <Text style={styles.demoDirectLinkText}>✨ Enter Interactive Demo Mode (Offline)</Text>
+          </TouchableOpacity>
         </Card>
 
         <Text style={styles.footerNote}>
@@ -215,6 +235,19 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.size.xs,
     fontWeight: TYPOGRAPHY.weight.medium,
   },
+  demoBannerBtn: {
+    marginTop: SPACING.xs,
+    backgroundColor: '#EA580C',
+    paddingVertical: 6,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: RADIUS.sm,
+    alignItems: 'center',
+  },
+  demoBannerBtnText: {
+    color: '#FFFFFF',
+    fontSize: TYPOGRAPHY.size.xs,
+    fontWeight: TYPOGRAPHY.weight.bold,
+  },
   loginBtn: {
     marginTop: SPACING.sm,
   },
@@ -241,6 +274,20 @@ const styles = StyleSheet.create({
   },
   demoBtn: {
     flex: 1,
+  },
+  demoDirectLink: {
+    marginTop: SPACING.md,
+    paddingVertical: SPACING.sm,
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: RADIUS.md,
+  },
+  demoDirectLinkText: {
+    color: '#0284C7',
+    fontSize: TYPOGRAPHY.size.xs,
+    fontWeight: TYPOGRAPHY.weight.bold,
   },
   footerNote: {
     color: '#64748B',

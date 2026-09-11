@@ -18,14 +18,28 @@ class RealtimeManager {
     this.queryClient = client;
   }
 
-  private getWebSocketUrl(): string {
+  private getWebSocketUrl(): string | null {
+    // 1. Explicit environment variable configured in Vercel or .env
+    if (process.env.EXPO_PUBLIC_WS_URL) {
+      return process.env.EXPO_PUBLIC_WS_URL;
+    }
+
+    // 2. Android emulator loopback
     if (Platform.OS === 'android') {
       return 'ws://10.0.2.2:8000/ws';
     }
+
+    // 3. Web environment
     if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location) {
       const host = window.location.hostname || 'localhost';
-      return `ws://${host}:8000/ws`;
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return `ws://${host}:8000/ws`;
+      }
+      // On HTTPS domain, use secure wss: to prevent Mixed Content errors
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${protocol}//${window.location.host}/ws`;
     }
+
     return 'ws://localhost:8000/ws';
   }
 
@@ -38,6 +52,10 @@ class RealtimeManager {
     this.isConnecting = true;
     try {
       const url = this.getWebSocketUrl();
+      if (!url) {
+        this.isConnecting = false;
+        return;
+      }
       this.socket = new WebSocket(url);
 
       this.socket.onopen = () => {

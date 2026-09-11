@@ -9,17 +9,47 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginAsDemo: (role?: 'operator' | 'supervisor') => void;
   logout: () => void;
   initialize: () => Promise<void>;
 }
 
 const STORAGE_KEY = 'relayai_auth_session';
 
+const DEMO_OPERATOR: User = {
+  id: 1,
+  email: 'operator@relayai.com',
+  name: 'Jordan Hayes',
+  role: 'operator',
+};
+
+const DEMO_SUPERVISOR: User = {
+  id: 2,
+  email: 'supervisor@relayai.com',
+  name: 'Morgan Blake',
+  role: 'supervisor',
+};
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
   isAuthenticated: false,
   isLoading: true,
+
+  loginAsDemo: (role: 'operator' | 'supervisor' = 'operator') => {
+    const user = role === 'operator' ? DEMO_OPERATOR : DEMO_SUPERVISOR;
+    const token = `demo-token-${role}`;
+    setAuthToken(token);
+    set({
+      user,
+      token,
+      isAuthenticated: true,
+      isLoading: false,
+    });
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, user }));
+    }
+  },
 
   login: async (email: string, password: string) => {
     try {
