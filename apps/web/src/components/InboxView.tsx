@@ -250,73 +250,148 @@ export const InboxView: React.FC<InboxViewProps> = ({
           </div>
 
           {/* Hero HITL AI Suggestion Card */}
-          {activeSuggestion && activeSuggestion.state === 'ready' && (
-            <div className="ai-suggestion-box animate-fade-in">
-              <div className="sug-header">
-                <div className="sug-title-badge">
-                  <Sparkles size={16} />
-                  <span>AI Suggested Response ({activeSuggestion.category})</span>
+          {activeSuggestion && (activeSuggestion.state === 'ready' || activeSuggestion.state === 'generating') && (
+            <div className="ai-suggestion-box animate-fade-in" style={{ position: 'relative' }}>
+              {activeSuggestion.state === 'generating' ? (
+                <div style={{ padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Sparkles size={20} color="var(--orange-500)" className="animate-spin" />
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>
+                      Claude 3.5 Sonnet is synthesizing a fresh draft...
+                    </span>
+                  </div>
+                  <div style={{ width: '100%', maxWidth: '400px', height: '4px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, var(--orange-500), var(--green-500))', borderRadius: '4px' }} />
+                  </div>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    Applying enterprise tone constraints & compliance verification rules...
+                  </span>
                 </div>
-                <div className="confidence-gauge">
-                  <span>{(activeSuggestion.confidence * 100).toFixed(0)}% High Confidence</span>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className="sug-header">
+                    <div className="sug-title-badge" style={{ gap: '8px', flexWrap: 'wrap' }}>
+                      <Sparkles size={16} />
+                      <span>AI Suggested Response</span>
+                      {activeSuggestion.tone && (
+                        <span style={{ fontSize: '10.5px', background: 'rgba(234, 88, 12, 0.2)', border: '1px solid rgba(234, 88, 12, 0.4)', padding: '2px 7px', borderRadius: '12px', color: 'var(--orange-500)', fontWeight: 700 }}>
+                          {activeSuggestion.tone}
+                        </span>
+                      )}
+                      {activeSuggestion.variant_index && (
+                        <span style={{ fontSize: '10px', background: 'rgba(255, 255, 255, 0.06)', padding: '2px 6px', borderRadius: '8px', color: 'var(--text-muted)' }}>
+                          Variant {activeSuggestion.variant_index} of {activeSuggestion.total_variants || 4}
+                        </span>
+                      )}
+                    </div>
+                    <div className="confidence-gauge">
+                      <span>{(activeSuggestion.confidence * 100).toFixed(0)}% High Confidence</span>
+                    </div>
+                  </div>
 
-              <div className="sug-text">{activeSuggestion.text}</div>
+                  {/* Quick Tone Switcher Pills */}
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginRight: '4px' }}>Regenerate as:</span>
+                    {['Executive Tone', 'Technical Deep-Dive', 'Fast-Track', 'Consultative'].map((toneName) => (
+                      <button
+                        key={toneName}
+                        type="button"
+                        className="btn-ghost"
+                        style={{
+                          fontSize: '11px',
+                          padding: '3px 9px',
+                          borderRadius: '12px',
+                          background: activeSuggestion.tone === toneName ? 'rgba(234, 88, 12, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                          borderColor: activeSuggestion.tone === toneName ? 'var(--orange-500)' : 'var(--border-subtle)',
+                          color: activeSuggestion.tone === toneName ? 'var(--orange-500)' : 'var(--text-secondary)',
+                        }}
+                        onClick={() => store.regenerateSuggestion(activeConv.id, toneName)}
+                      >
+                        {toneName.replace(' Tone', '')}
+                      </button>
+                    ))}
+                  </div>
 
-              {/* Collapsible Reasoning Trace */}
-              <button 
-                className="sug-reasoning-toggle" 
-                onClick={() => setShowReasoning(!showReasoning)}
-              >
-                {showReasoning ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                <span>{showReasoning ? 'Hide Reasoning Steps' : 'View AI Reasoning Trace'}</span>
-              </button>
+                  <div className="sug-text">{activeSuggestion.text}</div>
 
-              {showReasoning && (
-                <div className="sug-reasoning-list animate-fade-in">
-                  {activeSuggestion.reasoning_steps.map((step, idx) => (
-                    <div key={idx}>• {step}</div>
-                  ))}
-                </div>
+                  {/* Collapsible Reasoning Trace */}
+                  <button 
+                    className="sug-reasoning-toggle" 
+                    onClick={() => setShowReasoning(!showReasoning)}
+                  >
+                    {showReasoning ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    <span>{showReasoning ? 'Hide Reasoning Steps' : 'View AI Reasoning Trace'}</span>
+                  </button>
+
+                  {showReasoning && (
+                    <div className="sug-reasoning-list animate-fade-in">
+                      {activeSuggestion.reasoning_steps.map((step, idx) => (
+                        <div key={idx}>• {step}</div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="sug-actions">
+                    <button 
+                      id="btn-accept-suggestion"
+                      className="btn-accept" 
+                      onClick={() => store.acceptSuggestion(activeConv.id)}
+                    >
+                      <Check size={14} />
+                      <span>Accept & Send</span>
+                    </button>
+                    <button 
+                      className="btn-ghost" 
+                      onClick={() => handleEditSuggestion(activeSuggestion.text)}
+                      title="Copy into composer to edit before sending"
+                    >
+                      <Edit3 size={13} />
+                      <span>Edit</span>
+                    </button>
+                    <button 
+                      id="btn-regenerate-suggestion"
+                      className="btn-ghost" 
+                      onClick={() => store.regenerateSuggestion(activeConv.id)}
+                      title="Generate alternative response with Claude 3.5 Sonnet"
+                      style={{ gap: '6px' }}
+                    >
+                      <RotateCcw size={13} />
+                      <span>Regenerate ({activeSuggestion.variant_index || 1}/{activeSuggestion.total_variants || 4})</span>
+                    </button>
+                    <button 
+                      className="btn-ghost" 
+                      onClick={() => store.rejectSuggestion(activeConv.id)}
+                      style={{ color: 'var(--rose-500)', marginLeft: 'auto' }}
+                      title="Reject and dismiss suggestion"
+                    >
+                      <X size={13} />
+                      <span>Reject</span>
+                    </button>
+                  </div>
+                </>
               )}
+            </div>
+          )}
 
-              {/* Action Buttons */}
-              <div className="sug-actions">
-                <button 
-                  id="btn-accept-suggestion"
-                  className="btn-accept" 
-                  onClick={() => store.acceptSuggestion(activeConv.id)}
-                >
-                  <Check size={14} />
-                  <span>Accept & Send</span>
-                </button>
-                <button 
-                  className="btn-ghost" 
-                  onClick={() => handleEditSuggestion(activeSuggestion.text)}
-                  title="Copy into composer to edit before sending"
-                >
-                  <Edit3 size={13} />
-                  <span>Edit</span>
-                </button>
-                <button 
-                  className="btn-ghost" 
-                  onClick={() => store.regenerateSuggestion(activeConv.id)}
-                  title="Regenerate alternative phrasing"
-                >
-                  <RotateCcw size={13} />
-                  <span>Regenerate</span>
-                </button>
-                <button 
-                  className="btn-ghost" 
-                  onClick={() => store.rejectSuggestion(activeConv.id)}
-                  style={{ color: 'var(--rose-500)', marginLeft: 'auto' }}
-                  title="Reject and dismiss suggestion"
-                >
-                  <X size={13} />
-                  <span>Reject</span>
-                </button>
-              </div>
+          {/* Fallback button when suggestion is rejected or accepted */}
+          {(!activeSuggestion || activeSuggestion.state === 'rejected' || activeSuggestion.state === 'accepted') && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ 
+                  fontSize: '12px', 
+                  gap: '6px', 
+                  color: 'var(--orange-500)', 
+                  border: '1px solid rgba(234, 88, 12, 0.3)',
+                  background: 'rgba(234, 88, 12, 0.05)',
+                }}
+                onClick={() => store.regenerateSuggestion(activeConv.id)}
+              >
+                <Sparkles size={14} />
+                <span>✨ Generate New AI Draft</span>
+              </button>
             </div>
           )}
 

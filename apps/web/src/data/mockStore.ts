@@ -12,13 +12,15 @@ import {
   LeadStage,
 } from '../types';
 import { 
-  INITIAL_USERS, 
-  INITIAL_CONVERSATIONS, 
-  INITIAL_LEADS, 
-  INITIAL_CALL, 
+  INITIAL_USERS,
+  INITIAL_CONVERSATIONS,
+  INITIAL_SUGGESTIONS,
+  SUGGESTION_VARIANTS,
+  INITIAL_LEADS,
+  INITIAL_CALLS,
+  SIMULATED_CALL_UTTERANCES,
   INITIAL_AGENTS, 
-  INITIAL_SAVED_FILTERS, 
-  INITIAL_SUGGESTIONS 
+  INITIAL_SAVED_FILTERS 
 } from './mockData';
 
 // ---------------------------------------------------------------------------
@@ -101,23 +103,54 @@ class MockStore {
   public conversations: Conversation[] = INITIAL_CONVERSATIONS;
   public suggestions: Record<number, AISuggestion> = INITIAL_SUGGESTIONS;
   public leads: Lead[] = INITIAL_LEADS;
-  public activeCall: Call = INITIAL_CALL;
+  public calls: Call[] = INITIAL_CALLS;
+  public activeCallId: number = 301;
   public agents: AIAgent[] = INITIAL_AGENTS;
   public savedFilters: SavedFilter[] = INITIAL_SAVED_FILTERS;
   public appliedAST: FilterAST | null = null;
   public activeFilterName: string | null = null;
 
+  // Audio and Call Telemetry Simulation
+  public isAudioMuted: boolean = false;
+  public isMicMuted: boolean = false;
+  public isLiveStreaming: boolean = true;
+  public isSpeakingAudio: boolean = false;
+
   // Realtime audio waveform animation simulation
   public waveformBars: number[] = [14, 28, 45, 60, 32, 75, 90, 50, 65, 82, 40, 55, 30, 70, 85, 45];
+
+  public get activeCall(): Call {
+    return this.calls.find((c) => c.id === this.activeCallId) || this.calls[0];
+  }
+
+  public set activeCall(c: Call) {
+    this.calls = this.calls.map((item) => (item.id === c.id ? c : item));
+  }
 
   constructor() {
     // Pulse waveform for live voice call
     setInterval(() => {
-      if (this.activeCall.status !== 'completed') {
+      if (this.activeCall && this.activeCall.status !== 'completed' && !this.isAudioMuted) {
         this.waveformBars = Array.from({ length: 16 }, () => Math.floor(Math.random() * 75) + 15);
         this.notify();
       }
     }, 450);
+
+    // Increment duration timer and jitter latency/packet loss for live calls
+    setInterval(() => {
+      if (this.isLiveStreaming && this.activeCall && this.activeCall.status !== 'completed') {
+        const jitterLatency = Math.floor(Math.random() * 15) - 7;
+        const baseLatency = this.activeCall.latency_ms || 180;
+        const nextLatency = Math.max(120, Math.min(240, baseLatency + jitterLatency));
+
+        this.activeCall = {
+          ...this.activeCall,
+          duration_seconds: this.activeCall.duration_seconds + 1,
+          latency_ms: nextLatency,
+        };
+        this.notify();
+      }
+    }, 1000);
   }
 
   private notify() {
@@ -230,31 +263,97 @@ class MockStore {
     this.notify();
   }
 
-  public regenerateSuggestion(conversationId: number) {
+  private formatTime(totalSeconds: number): string {
+    const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const s = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  public regenerateSuggestion(conversationId: number, tonePreference?: string) {
     const current = this.suggestions[conversationId];
+    if (!current) return;
+
+    // 1. Immediately enter 'generating' state
     this.suggestions[conversationId] = {
       ...current,
       state: 'generating',
     };
     this.notify();
 
+    // 2. Select next variation or tone
+    const variants = SUGGESTION_VARIANTS[conversationId] || [
+      {
+        category: 'Autonomous Adaptive Response',
+        tone: 'Executive SLA',
+        confidence: 0.98,
+        text: `Thank you for your message! Our enterprise platform complies with all stated requirements. Detailed documentation and security attestations are available on our Trust Portal. Let me know if you would like to schedule a technical walkthrough.`,
+        reasoning_steps: [
+          'Evaluated conversation context against enterprise SLA rules.',
+          'Formulated executive response with verified compliance assurance.',
+          'Offered direct technical walkthrough schedule.',
+        ],
+      },
+      {
+        category: 'Architecture & Diagnostics',
+        tone: 'Technical Deep-Dive',
+        confidence: 0.96,
+        text: `Our engineering telemetry indicates all systems are operating normally. For API integration, verify your request headers contain HMAC signatures with active secondary secrets. Let us know if you need our team on a debugging call.`,
+        reasoning_steps: [
+          'Inspected real-time API telemetry.',
+          'Formulated precise technical guidance for developer teams.',
+          'Prepared immediate engineering support option.',
+        ],
+      },
+      {
+        category: 'Priority Action',
+        tone: 'Action-Oriented',
+        confidence: 0.99,
+        text: `I have prepared your priority account package and escalated to our dedicated onboarding manager. You can review and confirm directly at: https://app.relayai.com/onboarding. We can have your workflows live within 2 hours.`,
+        reasoning_steps: [
+          'Identified opportunity for high-velocity conversion.',
+          'Generated direct onboarding package link.',
+          'Committed to 2-hour implementation SLA.',
+        ],
+      },
+      {
+        category: 'Consultative Guidance',
+        tone: 'Consultative',
+        confidence: 0.95,
+        text: `Thanks for reaching out! We would be delighted to assist with your requirements. I have shared full step-by-step documentation to your account email, and our team is standing by to answer any questions.`,
+        reasoning_steps: [
+          'Crafted warm, empathetic consultative response.',
+          'Confirmed automated dispatch of documentation.',
+        ],
+      },
+    ];
+
+    let chosenIdx = 0;
+    if (tonePreference) {
+      const found = variants.findIndex((v) => v.tone.toLowerCase().includes(tonePreference.toLowerCase()));
+      chosenIdx = found >= 0 ? found : 0;
+    } else {
+      const currentIdx = current.variant_index ? current.variant_index - 1 : 0;
+      chosenIdx = (currentIdx + 1) % variants.length;
+    }
+
+    const nextVariant = variants[chosenIdx];
+
     setTimeout(() => {
       this.suggestions[conversationId] = {
-        id: `sug-${Date.now()}`,
+        id: `sug-${conversationId}-${Date.now()}`,
         conversation_id: conversationId,
-        category: 'Autonomous Adaptive Response',
-        confidence: 0.97,
-        text: `Alternative Response: Thank you for following up! Our enterprise compliance engineers have certified this workflow, and full documentation is available instantly on our dedicated security portal. Let me know if you would like me to schedule a technical walkthrough.`,
-        reasoning_steps: [
-          'Regenerated alternative reply with higher executive tone.',
-          'Integrated direct portal link and customer success contact information.',
-          'Cross-referenced security validation rules.',
-        ],
+        category: nextVariant.category,
+        tone: nextVariant.tone,
+        variant_index: chosenIdx + 1,
+        total_variants: variants.length,
+        confidence: nextVariant.confidence,
+        text: nextVariant.text,
+        reasoning_steps: nextVariant.reasoning_steps,
         created_at: 'Just now',
         state: 'ready',
       };
       this.notify();
-    }, 600);
+    }, 450);
   }
 
   public sendMessage(conversationId: number, content: string) {
@@ -293,24 +392,172 @@ class MockStore {
     this.notify();
   }
 
-  public bargeInCall() {
-    this.activeCall = {
-      ...this.activeCall,
-      status: 'human_takeover',
-      agent_name: `${this.currentUser.name} (Live Takeover)`,
-      utterances: [
-        ...(this.activeCall.utterances || []),
-        {
-          id: Date.now(),
-          call_id: this.activeCall.id,
-          speaker: 'agent',
-          text: `[Supervisor Barge-In]: Hello Sarah, this is ${this.currentUser.name}, operations lead at RelayAI. I'm stepping in to assist directly.`,
-          timestamp: '01:35',
-          sentiment: 'positive',
+  // --- Voice Call Telemetry Actions ---
+
+  public selectCall(callId: number) {
+    this.activeCallId = callId;
+    this.notify();
+  }
+
+  public toggleAudioMute() {
+    this.isAudioMuted = !this.isAudioMuted;
+    this.notify();
+  }
+
+  public toggleMicMute() {
+    this.isMicMuted = !this.isMicMuted;
+    this.notify();
+  }
+
+  public toggleLiveStreaming() {
+    this.isLiveStreaming = !this.isLiveStreaming;
+    this.notify();
+  }
+
+  public bargeInCall(callId?: number) {
+    const targetId = callId || this.activeCallId;
+    this.calls = this.calls.map((c) => {
+      if (c.id === targetId) {
+        const hasGreeting = c.utterances?.some((u) => u.text.includes('[Supervisor Barge-In]'));
+        const newUtterances = [...(c.utterances || [])];
+
+        if (!hasGreeting) {
+          const firstName = c.customer_name.split(' ')[0];
+          newUtterances.push({
+            id: `barge-${Date.now()}`,
+            call_id: c.id,
+            speaker: 'supervisor',
+            text: `[Supervisor Barge-In]: Hello ${firstName}, this is ${this.currentUser.name}, operations lead at RelayAI. I'm stepping into the live audio channel to assist directly.`,
+            timestamp: this.formatTime(c.duration_seconds),
+            sentiment: 'positive',
+            confidence: 1.0,
+          });
+        }
+
+        return {
+          ...c,
+          status: 'human_takeover',
+          agent_name: `${this.currentUser.name} (Live Takeover)`,
+          utterances: newUtterances,
+        };
+      }
+      return c;
+    });
+
+    // Burst waveform for 1 second
+    this.waveformBars = [85, 95, 78, 92, 88, 94, 99, 91, 86, 95, 80, 92, 85, 90, 97, 88];
+    this.notify();
+  }
+
+  public supervisorSpeak(callId: number, text: string, isWhisper = false) {
+    if (!text.trim()) return;
+
+    this.calls = this.calls.map((c) => {
+      if (c.id === callId) {
+        const newUtterance = {
+          id: `sup-${Date.now()}`,
+          call_id: c.id,
+          speaker: isWhisper ? ('supervisor' as const) : ('agent' as const),
+          text: isWhisper ? `[Private Whisper to Agent]: ${text}` : `[Supervisor]: ${text}`,
+          timestamp: this.formatTime(c.duration_seconds),
+          sentiment: 'positive' as const,
           confidence: 1.0,
-        },
-      ],
-    };
+          is_whisper: isWhisper,
+        };
+
+        return {
+          ...c,
+          status: 'human_takeover',
+          agent_name: `${this.currentUser.name} (Live Takeover)`,
+          utterances: [...(c.utterances || []), newUtterance],
+        };
+      }
+      return c;
+    });
+
+    // Waveform burst
+    this.waveformBars = [90, 80, 95, 88, 92, 75, 98, 89, 94, 86, 90, 95, 82, 88, 91, 85];
+    this.notify();
+  }
+
+  public returnControlToAI(callId: number) {
+    this.calls = this.calls.map((c) => {
+      if (c.id === callId) {
+        return {
+          ...c,
+          status: 'ai_speaking',
+          agent_name: 'Alex - Voice AI Hub',
+          utterances: [
+            ...(c.utterances || []),
+            {
+              id: `handoff-${Date.now()}`,
+              call_id: c.id,
+              speaker: 'agent' as const,
+              text: `[Supervisor Hands Back Control]: Resuming autonomous AI agent telemetry.`,
+              timestamp: this.formatTime(c.duration_seconds),
+              sentiment: 'positive' as const,
+              confidence: 0.99,
+            },
+          ],
+        };
+      }
+      return c;
+    });
+
+    this.notify();
+  }
+
+  public simulateNextUtterance(callId: number) {
+    const simList = SIMULATED_CALL_UTTERANCES[callId] || [];
+    if (simList.length === 0) return;
+
+    this.calls = this.calls.map((c) => {
+      if (c.id === callId) {
+        const existingCount = c.utterances?.filter((u) => !u.text.includes('[Supervisor')).length || 0;
+        const nextUt = simList[existingCount % simList.length];
+
+        return {
+          ...c,
+          duration_seconds: c.duration_seconds + 8,
+          utterances: [
+            ...(c.utterances || []),
+            {
+              id: `sim-${Date.now()}`,
+              call_id: c.id,
+              speaker: nextUt.speaker,
+              text: nextUt.text,
+              timestamp: this.formatTime(c.duration_seconds + 8),
+              sentiment: nextUt.sentiment,
+              intent: nextUt.intent,
+              confidence: nextUt.confidence || 0.97,
+            },
+          ],
+        };
+      }
+      return c;
+    });
+
+    this.waveformBars = [70, 85, 60, 90, 82, 95, 78, 88, 75, 92, 80, 85, 70, 88, 94, 80];
+    this.notify();
+  }
+
+  public endCall(callId: number) {
+    this.calls = this.calls.map((c) => {
+      if (c.id === callId) {
+        return {
+          ...c,
+          status: 'completed',
+          ended_at: 'Just now',
+        };
+      }
+      return c;
+    });
+    this.notify();
+  }
+
+  public restartCall(callId: number) {
+    const pristine = INITIAL_CALLS.find((c) => c.id === callId) || INITIAL_CALLS[0];
+    this.calls = this.calls.map((c) => (c.id === callId ? JSON.parse(JSON.stringify(pristine)) : c));
     this.notify();
   }
 
@@ -318,7 +565,8 @@ class MockStore {
     this.conversations = INITIAL_CONVERSATIONS;
     this.suggestions = INITIAL_SUGGESTIONS;
     this.leads = INITIAL_LEADS;
-    this.activeCall = INITIAL_CALL;
+    this.calls = JSON.parse(JSON.stringify(INITIAL_CALLS));
+    this.activeCallId = 301;
     this.appliedAST = null;
     this.activeFilterName = null;
     this.notify();

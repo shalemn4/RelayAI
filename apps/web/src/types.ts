@@ -103,6 +103,9 @@ export interface AISuggestion {
   text: string;
   confidence: number;
   category: string;
+  tone?: string;
+  variant_index?: number;
+  total_variants?: number;
   reasoning_steps: string[];
   created_at: string;
   state: 'idle' | 'generating' | 'ready' | 'accepted' | 'rejected' | 'failed' | 'expired';
@@ -111,12 +114,13 @@ export interface AISuggestion {
 export interface CallUtterance {
   id: string | number;
   call_id: number;
-  speaker: 'agent' | 'customer';
+  speaker: 'agent' | 'customer' | 'supervisor';
   text: string;
   timestamp: string;
   sentiment?: Sentiment;
   intent?: string;
   confidence?: number;
+  is_whisper?: boolean;
 }
 
 export interface Call {
@@ -131,6 +135,9 @@ export interface Call {
   started_at: string;
   ended_at?: string;
   sentiment: Sentiment;
+  sentiment_score?: number;
+  latency_ms?: number;
+  packet_loss?: number;
   intent_summary?: string;
   utterances?: CallUtterance[];
 }

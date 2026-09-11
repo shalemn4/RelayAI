@@ -327,19 +327,162 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
   },
 ];
 
+export const SUGGESTION_VARIANTS: Record<number, Array<{
+  category: string;
+  tone: string;
+  confidence: number;
+  text: string;
+  reasoning_steps: string[];
+}>> = {
+  101: [
+    {
+      category: 'Security & Compliance',
+      tone: 'Executive Tone',
+      confidence: 0.96,
+      text: 'Hello Sarah! You can access our verified 2025 SOC2 Type II compliance package and real-time security posture report directly through our Trust Center at: https://trust.relayai.com/audit/soc2-2025. I have also emailed an encrypted PDF copy to your board account.',
+      reasoning_steps: [
+        'Customer requested SOC2 Type II report with tight 3 PM board deadline.',
+        'Queried internal compliance repository: SOC2 Type II certificate is valid through Q4 2026.',
+        'Verified Apex Global has an active NDA on file permitting direct Trust Center access.',
+        'Constructed personalized response with secure link and backup email dispatch.',
+      ],
+    },
+    {
+      category: 'Architecture & Audit',
+      tone: 'Technical Deep-Dive',
+      confidence: 0.98,
+      text: 'Hi Sarah, our SOC2 Type II audit report was conducted by Schellman & Co., evaluating Trust Services Criteria for Security, Availability, and Confidentiality with zero exceptions noted. The full cryptographic package includes third-party penetration tests, continuous AWS GovCloud telemetry logs, and ISO 27001 mapping: https://trust.relayai.com/technical-audit.',
+      reasoning_steps: [
+        'Selected technical depth for enterprise security review and compliance evaluation.',
+        'Referenced independent third-party auditor Schellman & Co. and zero-exception finding.',
+        'Included direct cryptographic package link with penetration testing and telemetry logs.',
+      ],
+    },
+    {
+      category: 'Executive Assurance',
+      tone: 'Fast-Track Board Focus',
+      confidence: 0.99,
+      text: 'Sarah, to ensure your board meeting at 3 PM proceeds without friction, I have generated an executive 1-page compliance certificate summary alongside the full 68-page SOC2 report: https://trust.relayai.com/apex-board-dossier.pdf. Let me know if your compliance chair requires an immediate live attest call with our CISO.',
+      reasoning_steps: [
+        'Created high-priority executive briefing format tailored for immediate board review.',
+        'Generated dual-document package (1-page board brief + 68-page comprehensive audit).',
+        'Offered real-time CISO availability for instant stakeholder alignment before 3 PM.',
+      ],
+    },
+    {
+      category: 'Customer Success',
+      tone: 'Consultative & Direct',
+      confidence: 0.95,
+      text: 'Hi Sarah, I just shared the complete SOC2 Type II compliance package directly to your board email thread. You can also view the live auditor verification badge at https://trust.relayai.com/audit/soc2-2025. Our compliance team is standing by until 3 PM if any questions arise.',
+      reasoning_steps: [
+        'Provided empathetic and direct response confirming direct delivery to board thread.',
+        'Included live web auditor badge for instant mobile verification.',
+        'Assigned dedicated standby monitoring window until 3 PM board meeting.',
+      ],
+    },
+  ],
+  103: [
+    {
+      category: 'Incident Triage',
+      tone: 'Incident Triage',
+      confidence: 0.91,
+      text: 'Hi Marcus, our infrastructure engineering team noticed a minor key rotation update at 07:45 AM UTC. If your webhook listener verifies HMAC-SHA256 signatures, please verify that your endpoint is using the Secondary Signing Secret from Settings > Developer API. Let me know if you would like me to revert the active key immediately.',
+      reasoning_steps: [
+        'Identified error pattern: 401 unauthorized on webhook delivery.',
+        'Correlated with today scheduled API signature key rotation event at 07:45 UTC.',
+        'Customer application is likely still hashing against the legacy signing secret.',
+        'Provided immediate troubleshooting guidance and safety rollback offer.',
+      ],
+    },
+    {
+      category: 'Architecture Diagnostics',
+      tone: 'Technical Deep-Dive',
+      confidence: 0.97,
+      text: 'Marcus, checking our ingress telemetry for endpoint /webhook/orders: our dispatcher is signing with SHA256 using key ID rot-2025-09. If your server is validating using the previous secret key, headers like "X-Relay-Signature" will reject with 401. You can configure dual-secret verification or update your .env with: SECRET_KEY_SECONDARY. I can also trigger a test ping payload right now.',
+      reasoning_steps: [
+        'Inspected real-time telemetry logs for endpoint /webhook/orders.',
+        'Identified specific signature header mismatch on X-Relay-Signature.',
+        'Provided dual-secret verification architecture recommendation to prevent zero-downtime key rotation errors.',
+      ],
+    },
+    {
+      category: 'Critical Operations',
+      tone: 'Emergency Rollback',
+      confidence: 0.99,
+      text: 'Hi Marcus, since production robotics orders are affected, I can perform an immediate 1-click fallback to your previous signing secret for the next 24 hours so your dispatch pipeline unblocks immediately while your team rotates keys. Would you like me to execute this temporary rollback now?',
+      reasoning_steps: [
+        'Assessed severity: critical production order blockage on Chicago warehouse robotics.',
+        'Identified safe operational bypass: 24-hour key rollback with zero downtime.',
+        'Requested simple confirmation to execute emergency mitigation.',
+      ],
+    },
+    {
+      category: 'Developer Guidance',
+      tone: 'Developer Guidance',
+      confidence: 0.94,
+      text: 'Marcus, please check your webhook verification middleware. The 401 indicates header mismatch. Head to Settings > Webhooks > Regenerate Secondary Key or test your listener with: curl -X POST https://api.relayai.com/v1/webhooks/test. Let us know if you need our on-call engineer on a quick bridge.',
+      reasoning_steps: [
+        'Provided actionable developer debugging steps and sample curl command.',
+        'Offered instant escalation to engineering bridge.',
+      ],
+    },
+  ],
+  106: [
+    {
+      category: 'Compliance & Telemetry',
+      tone: 'Compliance & Telemetry',
+      confidence: 0.98,
+      text: 'Hello Priya, yes! RelayAI includes a built-in Zero-PII Sanitizer pipeline that intercepts both audio streaming tokens and text chat before persistence. SSNs, 16-digit PANs, CVVs, and medical credentials are substituted with high-entropy cryptographic hashes [REDACTED_SSN_***] with zero database leakage.',
+      reasoning_steps: [
+        'Analyzed inquiry regarding live call telemetry and real-time regex redaction.',
+        'Mapped to RelayAI native Zero-PII sanitization engine located in backend audio pipeline.',
+        'Prepared detailed technical explanation confirming zero unmasked storage of sensitive data.',
+      ],
+    },
+    {
+      category: 'FinTech Security',
+      tone: 'FinTech Architecture',
+      confidence: 0.99,
+      text: 'Priya, our streaming Zero-PII architecture operates at Layer 4 before audio enters our ASR or vector store. Spoken 9-digit SSNs, bank routing numbers, and ABA transit codes are scrubbed via in-memory regex tokenizers with under 15ms overhead, fully compliant with GLBA and PCI-DSS Level 1 specifications.',
+      reasoning_steps: [
+        'Emphasized sub-15ms latency benchmarks for Layer 4 streaming tokenization.',
+        'Cited specific FinTech regulatory frameworks: GLBA and PCI-DSS Level 1.',
+        'Confirmed zero persistence to both audio disks and transcript vector indexes.',
+      ],
+    },
+    {
+      category: 'Auditor Walkthrough',
+      tone: 'Auditor Walkthrough',
+      confidence: 0.96,
+      text: 'Hello Priya! Absolutely. In fact, our auditor view includes a live PII Redaction Log where your compliance team can inspect synthetic hashes alongside cryptographic verification tokens without ever exposing customer PII. I can enable this compliance audit dashboard on your trial organization today.',
+      reasoning_steps: [
+        'Offered immediate trial feature entitlement for live auditor verification portal.',
+        'Demonstrated verifiable zero-trust transparency for enterprise procurement.',
+      ],
+    },
+    {
+      category: 'Concise Assurance',
+      tone: 'Concise Assurance',
+      confidence: 0.95,
+      text: 'Hi Priya, yes—every audio frame and text token is processed through our real-time Zero-PII scrubber prior to storage. All SSNs and card numbers are masked as [REDACTED] in memory. Would you like to review our SOC2 PCI-DSS Attestation of Compliance?',
+      reasoning_steps: [
+        'Formulated concise, high-assurance response with regulatory attestation attachment offer.',
+      ],
+    },
+  ],
+};
+
 export const INITIAL_SUGGESTIONS: Record<number, AISuggestion> = {
   101: {
     id: 'sug-101',
     conversation_id: 101,
     category: 'Security & Compliance',
+    tone: 'Executive Tone',
+    variant_index: 1,
+    total_variants: 4,
     confidence: 0.96,
-    text: 'Hello Sarah! You can access our verified 2025 SOC2 Type II compliance package and real-time security posture report directly through our Trust Center at: https://trust.relayai.com/audit/soc2-2025. I have also emailed an encrypted PDF copy to your board account.',
-    reasoning_steps: [
-      'Customer requested SOC2 Type II report with tight 3 PM board deadline.',
-      'Queried internal compliance repository: SOC2 Type II certificate is valid through Q4 2026.',
-      'Verified Apex Global has an active NDA on file permitting direct Trust Center access.',
-      'Constructed personalized response with secure link and backup email dispatch.',
-    ],
+    text: SUGGESTION_VARIANTS[101][0].text,
+    reasoning_steps: SUGGESTION_VARIANTS[101][0].reasoning_steps,
     created_at: 'Just now',
     state: 'ready',
   },
@@ -347,14 +490,12 @@ export const INITIAL_SUGGESTIONS: Record<number, AISuggestion> = {
     id: 'sug-103',
     conversation_id: 103,
     category: 'Incident Triage',
+    tone: 'Incident Triage',
+    variant_index: 1,
+    total_variants: 4,
     confidence: 0.91,
-    text: 'Hi Marcus, our infrastructure engineering team noticed a minor key rotation update at 07:45 AM UTC. If your webhook listener verifies HMAC-SHA256 signatures, please verify that your endpoint is using the Secondary Signing Secret from Settings > Developer API. Let me know if you would like me to revert the active key immediately.',
-    reasoning_steps: [
-      'Identified error pattern: 401 unauthorized on webhook delivery.',
-      'Correlated with today scheduled API signature key rotation event at 07:45 UTC.',
-      'Customer application is likely still hashing against the legacy signing secret.',
-      'Provided immediate troubleshooting guidance and safety rollback offer.',
-    ],
+    text: SUGGESTION_VARIANTS[103][0].text,
+    reasoning_steps: SUGGESTION_VARIANTS[103][0].reasoning_steps,
     created_at: '10:03 AM',
     state: 'ready',
   },
@@ -362,13 +503,12 @@ export const INITIAL_SUGGESTIONS: Record<number, AISuggestion> = {
     id: 'sug-106',
     conversation_id: 106,
     category: 'Compliance & Telemetry',
+    tone: 'Compliance & Telemetry',
+    variant_index: 1,
+    total_variants: 4,
     confidence: 0.98,
-    text: 'Hello Priya, yes! RelayAI includes a built-in Zero-PII Sanitizer pipeline that intercepts both audio streaming tokens and text chat before persistence. SSNs, 16-digit PANs, CVVs, and medical credentials are substituted with high-entropy cryptographic hashes [REDACTED_SSN_***] with zero database leakage.',
-    reasoning_steps: [
-      'Analyzed inquiry regarding live call telemetry and real-time regex redaction.',
-      'Mapped to RelayAI native Zero-PII sanitization engine located in backend audio pipeline.',
-      'Prepared detailed technical explanation confirming zero unmasked storage of sensitive data.',
-    ],
+    text: SUGGESTION_VARIANTS[106][0].text,
+    reasoning_steps: SUGGESTION_VARIANTS[106][0].reasoning_steps,
     created_at: '10:01 AM',
     state: 'ready',
   },
@@ -467,66 +607,217 @@ export const INITIAL_LEADS: Lead[] = [
   },
 ];
 
-export const INITIAL_CALL: Call = {
-  id: 301,
-  customer_id: 1,
-  customer_name: 'Sarah Jenkins',
-  customer_phone: '+1 (415) 890-2134',
-  status: 'ai_speaking',
-  duration_seconds: 142,
-  agent_id: 1,
-  agent_name: 'Alex - Voice AI Hub',
-  started_at: '10:22:15 AM',
-  sentiment: 'neutral',
-  intent_summary: 'Inquiring about automated cross-border shipment clearance and webhook notifications.',
-  utterances: [
+export const INITIAL_CALLS: Call[] = [
+  {
+    id: 301,
+    customer_id: 1,
+    customer_name: 'Sarah Jenkins',
+    customer_phone: '+1 (415) 890-2134',
+    status: 'ai_speaking',
+    duration_seconds: 142,
+    agent_id: 1,
+    agent_name: 'Alex - Voice AI Hub',
+    started_at: '10:22:15 AM',
+    sentiment: 'positive',
+    sentiment_score: 0.92,
+    latency_ms: 180,
+    packet_loss: 0.01,
+    intent_summary: 'Inquiring about automated cross-border shipment clearance and webhook notifications.',
+    utterances: [
+      {
+        id: 1,
+        call_id: 301,
+        speaker: 'agent',
+        text: 'Thank you for calling RelayAI Priority Support. My name is Alex. How can I assist your logistics team today?',
+        timestamp: '00:02',
+        sentiment: 'positive',
+        confidence: 0.98,
+      },
+      {
+        id: 2,
+        call_id: 301,
+        speaker: 'customer',
+        text: 'Hi Alex. We have an urgent dispatch out of Long Beach, and our customs broker is asking if RelayAI can send auto-SMS alerts whenever container clearance status changes.',
+        timestamp: '00:15',
+        sentiment: 'neutral',
+        intent: 'feature_inquiry',
+      },
+      {
+        id: 3,
+        call_id: 301,
+        speaker: 'agent',
+        text: 'Certainly! RelayAI integrates with your customs EDI or TMS platform via REST hooks. When the clearance flag transitions to approved, our engine autonomously sends an SMS alert with tracking links to both your broker and the driver.',
+        timestamp: '00:32',
+        sentiment: 'positive',
+        confidence: 0.95,
+      },
+      {
+        id: 4,
+        call_id: 301,
+        speaker: 'customer',
+        text: 'That sounds perfect. Does that also support WhatsApp messages if the driver has an international SIM card?',
+        timestamp: '00:54',
+        sentiment: 'positive',
+        intent: 'channel_capability',
+      },
+      {
+        id: 5,
+        call_id: 301,
+        speaker: 'agent',
+        text: 'Yes Sarah. RelayAI dynamically falls back to WhatsApp or RCS based on carrier reachability, guaranteeing 99.8% message delivery across international numbers.',
+        timestamp: '01:18',
+        sentiment: 'positive',
+        confidence: 0.97,
+      },
+    ],
+  },
+  {
+    id: 302,
+    customer_id: 3,
+    customer_name: 'Marcus Vance',
+    customer_phone: '+1 (312) 441-9820',
+    status: 'escalating',
+    duration_seconds: 215,
+    agent_id: 4,
+    agent_name: 'Elena - VIP Escalations',
+    started_at: '10:20:00 AM',
+    sentiment: 'negative',
+    sentiment_score: 0.35,
+    latency_ms: 195,
+    packet_loss: 0.03,
+    intent_summary: 'Production robotics order halted due to webhook signature 401 mismatch.',
+    utterances: [
+      {
+        id: 11,
+        call_id: 302,
+        speaker: 'agent',
+        text: 'Marcus, thank you for calling RelayAI priority escalation line. I see your webhook monitor is reporting 401s on order payload ingestion?',
+        timestamp: '00:04',
+        sentiment: 'neutral',
+        confidence: 0.96,
+      },
+      {
+        id: 12,
+        call_id: 302,
+        speaker: 'customer',
+        text: 'Yes! Our Chicago fulfillment facility cannot dispatch autonomous warehouse pickers right now. We need the legacy signing key reinstated or an engineer immediately.',
+        timestamp: '00:22',
+        sentiment: 'negative',
+        intent: 'critical_incident',
+      },
+      {
+        id: 13,
+        call_id: 302,
+        speaker: 'agent',
+        text: 'Understood Marcus. I have our operations supervisor standby in the room to initiate an immediate key rollback or take over this channel.',
+        timestamp: '00:45',
+        sentiment: 'neutral',
+        confidence: 0.94,
+      },
+    ],
+  },
+  {
+    id: 303,
+    customer_id: 2,
+    customer_name: 'Dr. Liam Chen',
+    customer_phone: '+1 (617) 555-0199',
+    status: 'human_takeover',
+    duration_seconds: 310,
+    agent_id: 2,
+    agent_name: 'Jordan Hayes (Live Takeover)',
+    started_at: '10:15:30 AM',
+    sentiment: 'positive',
+    sentiment_score: 0.88,
+    latency_ms: 165,
+    packet_loss: 0.01,
+    intent_summary: 'Reviewing Epic EHR integration architecture & signed BAA execution.',
+    utterances: [
+      {
+        id: 21,
+        call_id: 303,
+        speaker: 'customer',
+        text: 'Jordan, our clinical compliance director approved the BAA. We want to ensure all HL7 FHIR message streams sanitize patient identifiers.',
+        timestamp: '01:10',
+        sentiment: 'positive',
+        intent: 'compliance_review',
+      },
+      {
+        id: 22,
+        call_id: 303,
+        speaker: 'agent',
+        text: 'That is already configured in your sandbox, Dr. Chen. Our Zero-PII tokenizer masks all MRNs and SSNs before writing to your audit storage.',
+        timestamp: '01:35',
+        sentiment: 'positive',
+        confidence: 0.99,
+      },
+    ],
+  },
+];
+
+export const SIMULATED_CALL_UTTERANCES: Record<number, Array<{
+  speaker: 'agent' | 'customer';
+  text: string;
+  sentiment: 'positive' | 'neutral' | 'negative';
+  intent?: string;
+  confidence?: number;
+}>> = {
+  301: [
     {
-      id: 1,
-      call_id: 301,
+      speaker: 'customer',
+      text: 'Could you also enable automated bilingual translation (English & Spanish) for our Mexican border crossing freight lanes?',
+      sentiment: 'positive',
+      intent: 'bilingual_support',
+    },
+    {
       speaker: 'agent',
-      text: 'Thank you for calling RelayAI Priority Support. My name is Alex. How can I assist your logistics team today?',
-      timestamp: '00:02',
+      text: 'Yes Sarah! Our streaming NLP pipeline natively translates English to Mexican Spanish in under 85 milliseconds with 99.4% terminology accuracy on customs dispatch tokens.',
       sentiment: 'positive',
       confidence: 0.98,
     },
     {
-      id: 2,
-      call_id: 301,
       speaker: 'customer',
-      text: 'Hi Alex. We have an urgent dispatch out of Long Beach, and our customs broker is asking if RelayAI can send auto-SMS alerts whenever container clearance status changes.',
-      timestamp: '00:15',
-      sentiment: 'neutral',
-      intent: 'feature_inquiry',
-    },
-    {
-      id: 3,
-      call_id: 301,
-      speaker: 'agent',
-      text: 'Certainly! RelayAI integrates with your customs EDI or TMS platform via REST hooks. When the clearance flag transitions to approved, our engine autonomously sends an SMS alert with tracking links to both your broker and the driver.',
-      timestamp: '00:32',
+      text: 'Awesome. What is the onboarding timeline if we want to deploy this across 240 dispatchers by Friday?',
       sentiment: 'positive',
-      confidence: 0.95,
+      intent: 'deployment_timeline',
     },
     {
-      id: 4,
-      call_id: 301,
-      speaker: 'customer',
-      text: 'That sounds perfect. Does that also support WhatsApp messages if the driver has an international SIM card?',
-      timestamp: '00:54',
-      sentiment: 'positive',
-      intent: 'channel_capability',
-    },
-    {
-      id: 5,
-      call_id: 301,
       speaker: 'agent',
-      text: 'Yes Sarah. RelayAI dynamically falls back to WhatsApp or RCS based on carrier reachability, guaranteeing 99.8% message delivery across international numbers.',
-      timestamp: '01:18',
+      text: 'We can have your custom EDI schema ingested and test webhooks firing in staging within 4 hours. Our solutions architect will coordinate directly with your lead engineer.',
       sentiment: 'positive',
       confidence: 0.97,
     },
   ],
+  302: [
+    {
+      speaker: 'customer',
+      text: 'Can the supervisor force-sync our secondary key right now so we do not have to redeploy our Docker containers in production?',
+      sentiment: 'negative',
+      intent: 'urgent_workaround',
+    },
+    {
+      speaker: 'agent',
+      text: 'Yes Marcus, our supervisor has live telemetry controls open and can execute a zero-downtime key lease extension with a single click.',
+      sentiment: 'positive',
+      confidence: 0.99,
+    },
+  ],
+  303: [
+    {
+      speaker: 'customer',
+      text: 'Perfect. When can our clinical informatics team receive the production API access tokens?',
+      sentiment: 'positive',
+      intent: 'token_provisioning',
+    },
+    {
+      speaker: 'agent',
+      text: 'I am generating the encrypted KMS key bundle right now Dr. Chen. It will arrive via secure channel within 10 minutes.',
+      sentiment: 'positive',
+      confidence: 0.99,
+    },
+  ],
 };
+
+export const INITIAL_CALL: Call = INITIAL_CALLS[0];
 
 export const INITIAL_SAVED_FILTERS: SavedFilter[] = [
   {
